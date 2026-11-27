@@ -5,10 +5,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: unzip -q ./*.zip -d proj
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - uses: gradle/actions/setup-gradle@v3
         with: { gradle-version: 8.7 }
-      - run: gradle assembleDebug --no-daemon
+      - run: |
+          D=$(dirname "$(find proj -name settings.gradle.kts | head -1)")
+          cd "$D"
+          gradle assembleDebug --no-daemon
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/"
       - uses: actions/upload-artifact@v4
-        with: { name: FreeClipper-APK, path: app/build/outputs/apk/debug/app-debug.apk }
+        with: { name: FreeClipper-APK, path: out/app-debug.apk }
